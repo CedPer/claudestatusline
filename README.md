@@ -4,7 +4,9 @@ Une statusline compacte sur deux lignes pour [Claude Code](https://docs.anthropi
 
 ## Aperçu
 
-La statusline est conçue pour afficher :
+![Aperçu de la statusline Claude Code](docs/statusline-preview.svg)
+
+*Illustration indicative : les valeurs sont des exemples. Les informations de quota dépendent des données exposées par la version de Claude Code utilisée.*
 
 **Ligne 1**
 - Dossier du projet
@@ -15,23 +17,23 @@ La statusline est conçue pour afficher :
 **Ligne 2**
 - Barre de progression et pourcentage de contexte
 - Durée de session
-- Utilisation et heure de réinitialisation des fenêtres de quota de 5 heures et de 7 jours, lorsque Claude Code fournit ces données
+- Utilisation et réinitialisation des fenêtres de quota de 5 heures et de 7 jours, si ces données sont disponibles
 
-Les couleurs sont différenciées par catégorie : cyan pour le projet/contexte, violet pour Git et l'effort, vert pour les valeurs positives et pourcentages, jaune pour le modèle et la durée, gris bleuté pour les séparateurs et les informations de réinitialisation. L'arrière-plan est bleu nuit. Les chiffres d'exemple ne sont pas des valeurs fixes.
+La palette utilise le cyan pour le projet et le contexte, le violet pour Git et l'effort, le vert pour les indicateurs et pourcentages, le jaune pour le modèle et la durée, et le gris bleuté pour les séparateurs et les informations de réinitialisation. L'arrière-plan est bleu nuit.
 
-> **Compatibilité :** les champs JSON disponibles dépendent de la version de Claude Code. Les informations de quota ou de durée qui ne sont pas fournies par la version installée peuvent être absentes ou afficher « — ». Certaines icônes nécessitent une police de terminal compatible avec les glyphes Nerd Font.
+> **Compatibilité :** les champs JSON disponibles varient selon la version de Claude Code. Les informations de quota ou de durée absentes des données reçues peuvent ne pas s'afficher. Certaines icônes nécessitent une police de terminal compatible avec les glyphes Nerd Font.
 
 ## Prérequis
 
 - Claude Code installé.
 - Bash.
-- Python 3 (utilisé pour lire le JSON fourni à la commande statusline).
+- Python 3 pour lire le JSON transmis à la statusline.
 - Git pour afficher la branche et détecter les modifications.
 - Un terminal prenant en charge les séquences ANSI.
 
 ## Installation globale
 
-Cette procédure active la statusline pour les projets et sessions Claude Code locaux de l'utilisateur, grâce aux paramètres utilisateur.
+Cette installation configure la statusline au niveau utilisateur, pour les projets et sessions Claude Code locaux.
 
 1. Crée le dossier de configuration si nécessaire :
 
@@ -39,14 +41,14 @@ Cette procédure active la statusline pour les projets et sessions Claude Code l
    mkdir -p ~/.claude
    ```
 
-2. Depuis la racine du dépôt cloné, copie le script dans le dossier utilisateur :
+2. Depuis la racine du dépôt cloné, copie le script :
 
    ```bash
    cp statusline.sh ~/.claude/statusline.sh
    chmod +x ~/.claude/statusline.sh
    ```
 
-3. Ouvre `~/.claude/settings.json`. Ajoute la propriété suivante à l'objet JSON existant :
+3. Ouvre `~/.claude/settings.json` et ajoute la propriété suivante à l'objet JSON existant :
 
    ```json
    "statusLine": {
@@ -56,7 +58,7 @@ Cette procédure active la statusline pour les projets et sessions Claude Code l
    }
    ```
 
-   **Important :** si le fichier contient déjà d'autres paramètres, conserve-les et ajoute uniquement la propriété `statusLine`, en respectant les virgules JSON. Ne crée pas une deuxième propriété `statusLine`. Si le fichier n'existe pas, crée-le avec un objet JSON autour de cette propriété, par exemple :
+   **Important :** conserve les autres réglages et respecte les virgules JSON. Ne crée pas une deuxième propriété `statusLine`. Si le fichier n'existe pas encore, crée-le avec un objet JSON complet :
 
    ```json
    {
@@ -86,23 +88,23 @@ Ajoute ensuite le bloc `statusLine` ci-dessus dans `~/.claude/settings.json`.
 
 - Vérifie les permissions : `ls -l ~/.claude/statusline.sh`
 - Vérifie les dépendances : `command -v bash python3 git`
-- Lance un test avec un JSON de démonstration :
+- Teste le script avec des données de démonstration :
 
   ```bash
-  printf '%s\n' '{"workspace":{"current_dir":"'"$PWD"'"},"model":{"display_name":"Claude Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":42},"session":{"duration_minutes":12}}' | ~/.claude/statusline.sh
+  printf '%s\\n' '{"workspace":{"current_dir":"'"$PWD"'"},"model":{"display_name":"Claude Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":42},"session":{"duration_minutes":12}}' | ~/.claude/statusline.sh
   ```
 
-- Si les quotas n'apparaissent pas, vérifie les champs transmis par ta version de Claude Code : les données de quota ne sont pas disponibles dans tous les payloads.
-- Si les icônes sont remplacées par des carrés, utilise une police compatible Nerd Font ou remplace les glyphes par des symboles Unicode plus simples.
-- Pour diagnostiquer une erreur, exécute : `bash -x ~/.claude/statusline.sh`.
+- Si les quotas ne s'affichent pas, les données correspondantes ne sont peut-être pas fournies par ta version de Claude Code.
+- Si les icônes apparaissent sous forme de carrés, installe une police compatible Nerd Font ou remplace les glyphes par des symboles Unicode simples.
+- Pour diagnostiquer une erreur : `bash -x ~/.claude/statusline.sh`.
 
 ## Consommation
 
-Le script s'exécute localement et lit le JSON transmis par Claude Code. Il ne fait pas d'appel API et ne demande pas à un modèle de générer la statusline à chaque actualisation. Il utilise un peu de CPU pour lancer Python et Git.
+Le script s'exécute localement et lit le JSON transmis par Claude Code. Il ne fait pas d'appel API et ne demande pas à un modèle de générer la statusline à chaque actualisation. Il consomme une petite quantité de CPU pour lancer Python et Git.
 
 ## Configuration de référence
 
-À fusionner dans `~/.claude/settings.json` existant, sans remplacer les autres réglages :
+À fusionner dans le fichier `~/.claude/settings.json` existant, sans remplacer les autres paramètres :
 
 ```json
 {
