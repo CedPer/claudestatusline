@@ -1,54 +1,53 @@
 # ClaudeStatusLine
 
-Une statusline compacte sur deux lignes pour [Claude Code](https://docs.anthropic.com/en/docs/claude-code), avec un fond bleu nuit et des couleurs distinctes par catégorie.
+Statusline compacte sur **deux lignes** pour [Claude Code](https://docs.anthropic.com/en/docs/claude-code), avec emojis, séparateurs `║`, barre de contexte et fenêtres de quota.
 
 ## Aperçu
 
 ![Aperçu de la statusline Claude Code](docs/statusline-preview.svg)
 
-*Illustration indicative : les valeurs sont des exemples. Les informations de quota dépendent des données exposées par la version de Claude Code utilisée.*
+Les valeurs ci-dessus sont illustratives. Les informations de quotas et leur réinitialisation s'affichent uniquement si elles sont fournies dans les données reçues de Claude Code.
 
-**Ligne 1**
-- Dossier du projet
-- Branche Git et état du dépôt : ✓ propre ou ✎ modifications détectées
-- Modèle raccourci (Opus, Sonnet ou Haiku)
-- Niveau d'effort
+### État Git propre
 
-**Ligne 2**
-- Barre de progression et pourcentage de contexte
-- Durée de session
-- Utilisation et réinitialisation des fenêtres de quota de 5 heures et de 7 jours, si ces données sont disponibles
+```text
+📁 mon-projet-claude║🌿 main ✓║🧠 Sonnet 3.5║⚡ Effort: Moyen
+📊 ████░░░░░░ 42% ctx║⏱️ 01:24:00║🪟 5h : 45% (2h15m)║📅 7j : 28% (4j)
+```
 
-La palette utilise le cyan pour le projet et le contexte, le violet pour Git et l'effort, le vert pour les indicateurs et pourcentages, le jaune pour le modèle et la durée, et le gris bleuté pour les séparateurs et les informations de réinitialisation. L'arrière-plan est bleu nuit.
+### État Git avec modifications
 
-> **Compatibilité :** les champs JSON disponibles varient selon la version de Claude Code. Les informations de quota ou de durée absentes des données reçues peuvent ne pas s'afficher. Certaines icônes nécessitent une police de terminal compatible avec les glyphes Nerd Font.
+```text
+📁 mon-projet-claude║🌿 main ✏️║🧠 Sonnet 3.5║⚡ Effort: Moyen
+📊 ████░░░░░░ 42% ctx║⏱️ 01:24:00║🪟 5h : 45% (2h15m)║📅 7j : 28% (4j)
+```
+
+## Éléments affichés
+
+- **Ligne 1 :** dossier du projet, branche Git et indicateur propre/modifié, modèle, niveau d'effort.
+- **Ligne 2 :** barre de contexte sur 10 segments, pourcentage de contexte, durée au format `HH:MM:SS`, consommation de la fenêtre de 5 heures et de 7 jours avec compte à rebours si disponible.
+- Les indicateurs de Git sont `✓` lorsque le dépôt est propre et `✏️` lorsqu'il contient des modifications.
+- Les pourcentages et temps de l'aperçu sont des exemples, pas des valeurs codées en dur.
 
 ## Prérequis
 
 - Claude Code installé.
-- Bash.
-- Python 3 pour lire le JSON transmis à la statusline.
-- Git pour afficher la branche et détecter les modifications.
-- Un terminal prenant en charge les séquences ANSI.
+- Bash, Python 3 et Git.
+- Terminal prenant en charge les couleurs ANSI et les emojis.
 
 ## Installation globale
 
-Cette installation configure la statusline au niveau utilisateur, pour les projets et sessions Claude Code locaux.
-
-1. Crée le dossier de configuration si nécessaire :
+1. Clone le dépôt et copie le script dans le dossier de configuration utilisateur :
 
    ```bash
+   git clone https://github.com/CedPer/claudestatusline.git
+   cd claudestatusline
    mkdir -p ~/.claude
-   ```
-
-2. Depuis la racine du dépôt cloné, copie le script :
-
-   ```bash
    cp statusline.sh ~/.claude/statusline.sh
    chmod +x ~/.claude/statusline.sh
    ```
 
-3. Ouvre `~/.claude/settings.json` et ajoute la propriété suivante à l'objet JSON existant :
+2. Ouvre `~/.claude/settings.json` et ajoute `statusLine` à l'objet JSON existant :
 
    ```json
    "statusLine": {
@@ -58,60 +57,18 @@ Cette installation configure la statusline au niveau utilisateur, pour les proje
    }
    ```
 
-   **Important :** conserve les autres réglages et respecte les virgules JSON. Ne crée pas une deuxième propriété `statusLine`. Si le fichier n'existe pas encore, crée-le avec un objet JSON complet :
+   Si le fichier n'existe pas, crée-le avec un objet JSON complet. **Ne remplace pas les autres paramètres existants** et veille à conserver une syntaxe JSON valide.
 
-   ```json
-   {
-     "statusLine": {
-       "type": "command",
-       "command": "~/.claude/statusline.sh",
-       "padding": 0
-     }
-   }
-   ```
-
-4. Redémarre Claude Code ou ouvre une nouvelle session pour vérifier le résultat.
-
-## Installation depuis GitHub
-
-```bash
-git clone https://github.com/CedPer/claudestatusline.git
-cd claudestatusline
-mkdir -p ~/.claude
-cp statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
-```
-
-Ajoute ensuite le bloc `statusLine` ci-dessus dans `~/.claude/settings.json`.
+3. Redémarre Claude Code ou démarre une nouvelle session.
 
 ## Vérification et dépannage
 
 - Vérifie les permissions : `ls -l ~/.claude/statusline.sh`
 - Vérifie les dépendances : `command -v bash python3 git`
-- Teste le script avec des données de démonstration :
-
-  ```bash
-  printf '%s\\n' '{"workspace":{"current_dir":"'"$PWD"'"},"model":{"display_name":"Claude Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":42},"session":{"duration_minutes":12}}' | ~/.claude/statusline.sh
-  ```
-
-- Si les quotas ne s'affichent pas, les données correspondantes ne sont peut-être pas fournies par ta version de Claude Code.
-- Si les icônes apparaissent sous forme de carrés, installe une police compatible Nerd Font ou remplace les glyphes par des symboles Unicode simples.
-- Pour diagnostiquer une erreur : `bash -x ~/.claude/statusline.sh`.
+- Si le modèle, l'effort, le contexte ou la durée n'apparaît pas correctement, les champs correspondants peuvent différer selon la version de Claude Code.
+- Les fenêtres de quota de 5 heures et de 7 jours sont facultatives : elles ne s'affichent que si les données sont présentes.
+- Si les emojis sont mal rendus, utilise un terminal et une police compatibles Unicode.
 
 ## Consommation
 
-Le script s'exécute localement et lit le JSON transmis par Claude Code. Il ne fait pas d'appel API et ne demande pas à un modèle de générer la statusline à chaque actualisation. Il consomme une petite quantité de CPU pour lancer Python et Git.
-
-## Configuration de référence
-
-À fusionner dans le fichier `~/.claude/settings.json` existant, sans remplacer les autres paramètres :
-
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh",
-    "padding": 0
-  }
-}
-```
+Le script s'exécute localement. Il ne fait aucun appel API et ne consomme pas de tokens de modèle ; il utilise un peu de CPU pour lire le JSON et vérifier l'état Git.
